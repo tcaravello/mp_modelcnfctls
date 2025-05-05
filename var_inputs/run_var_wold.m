@@ -1,6 +1,6 @@
 %% WOLD SHOCKS IRFs
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+% Tomas Caravello, Alisdair McKay, Christian Wolf
+% this version: May 5, 2025
 
 %% HOUSEKEEPING
  
@@ -10,7 +10,7 @@ close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
 
-path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/varplus';
+path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/mp_modelcnfctls';
 vintage = '';
 task = '/var_inputs';
 
@@ -18,7 +18,7 @@ addpath([path vintage '/_auxiliary_functions'])
 addpath([path vintage task '/_data/main'])
 
 save_results = 1;
-
+save_draws = 0;  %0 if you don't want to save draws of Wold IRFs. This is to save space, since they are not used in the paper.
 cd([path vintage task]);
 
 %% DATA
@@ -64,7 +64,7 @@ enddate = find(date == 2019.75);
 
 vardata = [unemp gdp inv cons lab tfp lab_prod lab_share infl ffr]; 
 series_names = {'Unemployment', 'Output', 'Investment', 'Consumption','Hours',...
-    'TFP', 'Labor Productivity', 'Labor Share', 'Inflation', 'FFR'};
+    'TFP', 'Labor Productivity', 'Labor Share', 'Inflation', 'Interest Rate'};
 
 vardata = vardata(startdate:enddate,:);
 
@@ -76,7 +76,6 @@ vardata = detrend(vardata);
 
 n_lags     = 4;                    % number of lags
 constant   = 0;                    % constant? 0: no constant, 1: just constant, 2: constant and linear trend.
-                                   % (no need since already de-trended data)
 
 IRF_hor    = 250;
 n_draws    = 1000;
@@ -103,7 +102,7 @@ Sigma_u   = Sigma_OLS;
 B         = B_OLS;
 
 % benchmark rotation: since we need an arbitrary rotation, we just use
-% cholesky, but any other will do, ordering does not matter here.
+% cholesky, but any other will do. Ordering does not matter here.
 
 bench_rot = chol(Sigma_u,'lower');
 
@@ -183,7 +182,7 @@ end
 
 % collect results
 
-%IS.Theta(:,:,:,i_draw) = squeeze(IRF_idraw);
+IS.Theta(:,:,:,i_draw) = squeeze(IRF_idraw);
 
 end
 
@@ -232,14 +231,15 @@ IS.freq_var = diag(freq_var_fn(IS.Theta_OLS,omega_1,omega_2));
 
 %% SAVE RESULTS
 
+IS_wold = IS;
+if save_draws == 0
+    IS_wold = rmfield(IS_wold,'Theta');
+end
+%%
 if save_results == 1
 
-    IS_wold = IS;
-    
     cd([path vintage task '/_results']);
-    
     save wold_results IS_wold series_names
-    
     cd([path vintage task]);
 
 end

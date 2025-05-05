@@ -1,6 +1,6 @@
 %% VAR-IMPLIED FORECASTS FOR SCENARIO ANALYSIS
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+% Tomas Caravello, Alisdair McKay, Christian Wolf
+% this version: June 7, 2024
 
 %% HOUSEKEEPING
  
@@ -10,7 +10,7 @@ close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
 
-path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/varplus';
+path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/mp_modelcnfctls';
 vintage = '';
 task = '/var_inputs';
 
@@ -99,11 +99,11 @@ n_y        = size(vardata,2);
 
 fcst_date  = find(date == enddate); % date at which you are making the forecast, here  I start at 2021Q2
 fcst_hor   = 20; % how many quarters out you want to forecast for plotting
-vars_fcst  = [pi_pos y_pos i_pos]; % ordering of the variables to forecast
+vars_fcst  = [pi_pos y_pos i_pos]; %ordering of the variables to forecast
 n_vars     = length(vars_fcst);
 
-fcst_length = IRF_hor; % this is for computing appropiate dimensions in the code, won't be shown
-fcst_lag    = 10; % how many lags of the data you want to plot
+fcst_length = IRF_hor; % this is for computing appropiate dimensions in the code, won't be shown.
+fcst_lag    = 10; %how many lags of the data you want to plot.
 
 series_names = series_names(vars_fcst);
 
@@ -119,6 +119,7 @@ T = size(vardata,1) - n_lags;
 %----------------------------------------------------------------
 % OLS Point Estimate Forecasts
 %----------------------------------------------------------------
+
 
 var_forecasts_OLS = forecast_fn(vardata,n_lags,constant,B_OLS,fcst_date,fcst_length,1);
 var_forecasts_OLS = var_forecasts_OLS(:,vars_fcst);
@@ -152,8 +153,6 @@ var_forecasts_lb  = squeeze(quantile(var_forecasts_draws,0.16,3));
 var_forecasts_med = squeeze(quantile(var_forecasts_draws,0.5,3));
 var_forecasts_ub  = squeeze(quantile(var_forecasts_draws,0.84,3));
 
-%% COLLECT RESULTS
-
 %----------------------------------------------------------------
 % Add History to Forecasts
 %----------------------------------------------------------------
@@ -161,6 +160,7 @@ var_forecasts_ub  = squeeze(quantile(var_forecasts_draws,0.84,3));
 % extend det_X
 
 det_trend = [(1:1:length(vardata))'; repmat(length(vardata),fcst_hor,1)];
+% det_trend = (1:1:length(vardata)+fcst_hor)';
 det_X_ext = [ones(length(vardata)+fcst_hor,1),det_trend];
 
 % inflation
@@ -207,17 +207,13 @@ i_forecasts_ub  = i_forecasts_ub + det_X_ext(fcst_date-fcst_lag:fcst_date+fcst_h
 date_ext = [date(end):0.25:date(end)+0.25*fcst_hor]';
 date_ext = [date(1:end-1);date_ext];
 
-%----------------------------------------------------------------
-% Save Results
-%----------------------------------------------------------------
+%% SAVE RESULTS
 
 if save_results == 1
 
     cd([path vintage task '/_results']);
-    
     save fcst_scenario_results var_forecasts_OLS var_history det_coeff det_X det_X_ext ... 
         fcst_lag fcst_hor fcst_date date date_ext series_names pi_pos y_pos i_pos
-    
     cd([path vintage task]);
 
 end

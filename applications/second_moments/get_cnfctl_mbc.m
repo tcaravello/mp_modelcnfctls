@@ -1,6 +1,5 @@
 %% COUNTERFACTUAL POLICY IRFs AFTER MBC SHOCK
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+% Tomas Caravello, Alisdair McKay, Christian Wolf
 
 %% HOUSEKEEPING
 
@@ -8,15 +7,19 @@ experiment = '/applications/second_moments';
 
 save_fig = 1;
 
-addpath([path vintage '/suff_stats/ratex']);
-addpath([path vintage '/suff_stats/behavioral']);
-addpath([path vintage '/suff_stats/mix']);
 addpath([path vintage '/_auxiliary_functions'])
 addpath([path vintage '/var_inputs/_results']);
-
 cd([path vintage experiment]);
 
 %% IMPORTS & SETTINGS
+
+%----------------------------------------------------------------
+% Experiment
+%----------------------------------------------------------------
+
+% show individual models?
+     
+indic_models = 0;
 
 %----------------------------------------------------------------
 % Policy Shock Sufficient Statistics
@@ -24,13 +27,13 @@ cd([path vintage experiment]);
 
 % import
 
-if indic_1shock == 0
+if indic_emp == 0
 
     import_suffstats
 
-elseif indic_1shock == 1
+elseif indic_emp == 1
 
-    import_suffstats_1shock
+    import_suffstats_emp
 
 end
 
@@ -57,20 +60,24 @@ clear IS_MBC
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
 
+cnfctl_0y       = 0; % output gap targeting
+cnfctl_0pi      = 0; % inflation targeting
+cnfctl_0ib      = 0; % nominal rate peg
+cnfctl_tylr     = 0; % Taylor rule
+cnfctl_ngdp     = 0; % NGDP targeting
+cnfctl_ibtarget = 0; % rate target
+cnfctl_optpol   = 1; % optimal dual mandate
+
 set_cnfctl_rule
 
 %----------------------------------------------------------------
 % Shock Space
 %----------------------------------------------------------------
 
-if indic_1shock == 0
+if indic_emp == 0
     shock_max = T; % set = T for all shocks
-elseif indic_1shock == 1
-    shock_max = 1;
-end
-
-if shock_max < T
-    disp('Note: I am not using all shocks.')
+else
+    shock_max = size(Pi_m_draws,2);
 end
 
 %% CONSTRUCT MBC SHOCK COUNTERFACTUAL
@@ -115,10 +122,6 @@ mbc_cnfctl(:,3,i_draw) = i_mbc_cnfctl;
 
 end
 
-%----------------------------------------------------------------
-% Construct Percentiles
-%----------------------------------------------------------------
-
 mbc_cnfctl_lb  = quantile(mbc_cnfctl,0.16,3);
 mbc_cnfctl_med = quantile(mbc_cnfctl,0.5,3);
 mbc_cnfctl_ub  = quantile(mbc_cnfctl,0.84,3);
@@ -126,6 +129,8 @@ mbc_cnfctl_ub  = quantile(mbc_cnfctl,0.84,3);
 %----------------------------------------------------------------
 % Individual Models
 %----------------------------------------------------------------
+
+if indic_emp == 0 && indic_models == 1
 
 n_models          = 2;
 mbc_cnfctl_models = NaN(T,n_y,n_models);
@@ -186,6 +191,8 @@ mbc_cnfctl_models(:,3,i_model) = mean(i_mbc_cfnctl_tmp,2);
 
 end
 
+end
+
 clear pi_mbc_cfnctl_tmp y_mbc_cfnctl_tmp i_mbc_cfnctl_tmp
 
 %% PLOT COUNTERFACTUAL IRFs
@@ -212,37 +219,57 @@ settings.colors.models = [196/255 174/255 120/255; ... % beige
 
 plotwidth = 0.27;
 gapsize = 0.05;
-gapsize_edges = (1-3*plotwidth-2*gapsize)/2;
+gapsize_edges = (1-3*plotwidth-2*gapsize)/2+0.02;
 left_pos = [gapsize_edges, gapsize_edges + gapsize + plotwidth, gapsize_edges + 2 * gapsize + 2 * plotwidth];
+
+% variable order
+
+var_order = [2 1 3];
 
 %----------------------------------------------------------------
 % MBC Shock
 %----------------------------------------------------------------
 
-if indic_RE == 1
-    cd([path vintage experiment '/_results/RE']);
-elseif indic_behav == 1
-    cd([path vintage experiment '/_results/behav']);
-elseif indic_joint == 1
-    cd([path vintage experiment '/_results/joint']);
+if indic_emp == 0
+
+    if indic_RE == 1
+        cd([path vintage experiment '/_results/re']);
+    elseif indic_behav == 1
+        cd([path vintage experiment '/_results/behav']);
+    elseif indic_joint == 1
+        cd([path vintage experiment '/_results/joint']);
+    end
+
+else
+    
+    cd([path vintage experiment '/_results/emp']);
+
 end
 
 figure
 
-for i_y = 1:n_y
+for ii_y = 1:n_y
 
-subplot(1,3,i_y)
+i_y = var_order(ii_y);
+
+subplot(1,3,ii_y)
 pos = get(gca, 'Position');
 set(gca,'FontSize',16)
 set(gca,'TickLabelInterpreter','latex')
-pos(1) = left_pos(i_y);
+pos(1) = left_pos(ii_y);
 pos(3) = plotwidth;
 set(gca,'Position', pos)
 hold on
 plot(0,0,':','Color',settings.colors.black,'LineWidth',4)
 hold on
-plot(0,0,'Color',settings.colors.blue,'LineWidth',4)
+jbfill(0,0,0,settings.colors.lblue,settings.colors.lblue,0,1);
 hold on
+if indic_emp == 0 && indic_models
+    for i_model = 1:n_models
+        plot(0,0,'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
+        hold on
+    end
+end
 jbfill(0:1:IRF_hor_plot,(mbc_cnfctl_lb(1:IRF_hor_plot+1,i_y))',(mbc_cnfctl_ub(1:IRF_hor_plot+1,i_y))',...
     settings.colors.lblue,settings.colors.lblue,0,1);
 hold on
@@ -250,17 +277,32 @@ plot(0:1:IRF_hor_plot,mbc_base(1:IRF_hor_plot+1,i_y),':','Color',settings.colors
 hold on
 plot(0:1:IRF_hor_plot,mbc_cnfctl_med(1:IRF_hor_plot+1,i_y),'Color',settings.colors.blue,'LineWidth',4)
 hold on
+if indic_emp == 0 && indic_models == 1
+    for i_model = 1:n_models
+        plot(0:1:IRF_hor_plot,mbc_cnfctl_models(1:IRF_hor_plot+1,i_y,i_model),'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
+        hold on
+    end
+end
 % xlim([1 IRF_hor_plot])
 % ylim([-2 2])
 % yticks([-2 -1 0 1 2])
+if ii_y == 2
+    ylim([-0.2 0.3])
+    yticks([-0.2:0.1:0.3])
+end
 set(gcf,'color','w')
 title(series_names(i_y),'interpreter','latex','fontsize',24)
 xlabel('Horizon','interpreter','latex','FontSize',20)
-if i_y == 1
+if ii_y == 1
     ylabel('\% Deviation','interpreter','latex','FontSize',20)
 end
-if i_y == 2
-    legend({'Data','Counterfct''l'},'Location','Southeast','fontsize',18,'interpreter','latex','NumColumns',2)
+if i_y == 3
+    if indic_emp == 0 && indic_models == 1
+        legend({'Data','Counterfct''l','RANK','HANK'},'Location','Southeast','fontsize',18,'interpreter','latex','NumColumns',2)
+    else
+        legend({'Data','Counterfct''l'},'Location','Southeast','fontsize',18,'interpreter','latex','NumColumns',2)
+    end
+    
 end
 grid on
 hold off
@@ -268,19 +310,11 @@ hold off
 end
 
 pos = get(gcf, 'Position');
-set(gcf, 'Position', [pos(1) pos(2) 2.25*pos(3) pos(4)]);
+set(gcf, 'Position', [pos(1) pos(2) 1.2*2.25*pos(3) 1.1*pos(4)]);
 set(gcf, 'PaperPositionMode', 'auto');
 
 if save_fig == 1
-if indic_1shock == 0
-    if cnfctl_optpol == 1
-        print('mbc_optpol','-dpng');
-    end
-elseif indic_1shock == 1
-    if cnfctl_optpol == 1
-        print('mbc_optpol_1shock','-dpng');
-    end
-end
-end
 
-cd([path vintage experiment]);
+print('mbc_optpol','-dpng');
+
+end

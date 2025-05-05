@@ -1,6 +1,5 @@
-%% SAMPLE FROM POSTERIOR FOR ANY MODEL
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+%% SAMPLE FROM THE POSTERIOR FOR ANY OF THE STRUCTURAL MODELS
+% Tomas Caravello, Alisdair McKay and Christian Wolf
 
 %% HOUSEKEEPING
  
@@ -9,38 +8,26 @@ clear all
 close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
-warning('off','MATLAB:declareGlobalBeforeUse')
 
-path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/varplus';
+path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/mp_modelcnfctls';
 vintage = '';
 task = '/model_estim';
 
-addpath([path vintage '/_auxiliary_functions'])
-addpath([path vintage task '/_results'])
-addpath([path vintage '/var_inputs/_results'])
+model = '/rank'; %type '/rank' for RANK, '/hank' for HANK
 
-cd([path vintage task]);
+%% SETTINGS
 
-%% SET-UP
+save_results = 0; %1 if you want to save results
 
-%----------------------------------------------------------------
-% Model
-%----------------------------------------------------------------
-
-model      = '/hank'; % '/rank' for RANK, '/hank' for HANK
-behavioral = 0; % 1 if you want to estimate the behavioral parameters, 0 if you wanna do ratex. 
-
-%----------------------------------------------------------------
-% Settings
-%----------------------------------------------------------------
-
-save_results = 0; % 1 if you want to save results
-
-load_hank = 0; % 0 if you want to compute HANK jacobians from scratch, 1 if you want to load them. 
+load_hank = 1; % 0 if you want to compute HANK jacobians from scratch, 1 if you want to load them. 
 
 load_init_state = 0; % 1 if you want to load the initial state (parameters and variance matrix)
 
-global T T_use n_shock
+behavioral = 0; %1 if you want to estimate the behavioral parameters, 0 if you wanna do ratex. 
+
+global T T_use n_shock shocks_match
+
+shocks_match = 2; %2 if you want to match both the AD and RR shocks. 1 if you want to match only AD (requires additional code modifications).
 
 n_shock = 25;       % Number of news shocks to use
 T_use = 25;         % Horizon to match IRFs
@@ -49,71 +36,65 @@ T_save = 200;        % Horizon used to save IRF matrices.
 
 cov_mat = 0; %1 if you want to use diagonal, 0 if you want to use non-diagonal.
 
+% Sampler settings
+
 % set a low number of draws for exposition purposes. For this to work in
 % practise you need a larger number of N_adapt and N_burn. 
 
-N_adapt = 1000; % number of draws to estimate draw covariance matrix. If you wanna turn off set N_adapt = 0
-N_burn = N_adapt + 500; % number of draws to burn
-N_keep = 100;  % number of matrix draws to keep.
-keep_every = 5; %this means that we store 1 out of keep_every draws
+N_adapt = 100000; % number of draws to estimate draw covariance matrix. If you wanna turn off set N_adapt = 0
+N_burn = N_adapt + 50000; % number of draws to burn
+N_keep = 1000;  % number of matrix draws to keep.
+keep_every = 100; %this means that we store 1 out of keep_every draws
 N_draws = N_burn + keep_every*N_keep; % total number of draws.
-n_iter_print = 100; % print time every n_iter_print iters. Set equal to N_draws to turn off.
+n_iter_print = 1000; % print time every n_iter_print iters. Set equal to N_draws to turn off.
 
-var_scale = 0.25;
-var_scale_intial_draws = 0.6;
+var_scale = 0.6;   % size of the RWMH step.
+var_scale_intial_draws = 0.8;
 
-%% IMPORTS AND PREPARATIONS
+addpath([path vintage '/_auxiliary_functions'])
+addpath([path vintage task '/_results'])
+addpath([path vintage '/var_inputs/_results'])
 
-%----------------------------------------------------------------
-% Empirical Targets
-%----------------------------------------------------------------
+cd([path vintage task]);
+
+%% EMPIRICAL TARGETES
 
 get_empirical_targets;
 
-%----------------------------------------------------------------
-% Calibration
-%----------------------------------------------------------------
+%% CALIBRATION
 
 get_calibration_general;
 
-%----------------------------------------------------------------
-% Jacobians
-%----------------------------------------------------------------
+%% JACOBIANS
 
 get_baseline_jacobians;
 
-%----------------------------------------------------------------
-% Priors
-%----------------------------------------------------------------
+%% PRIORS
 
 get_priors_general;
 
 %% SAMPLE FROM POSTERIOR
 
-%----------------------------------------------------------------
-% Preparations
-%----------------------------------------------------------------
-
 settings_MH = struct();
-settings_MH.N_adapt = N_adapt;
-settings_MH.N_burn = N_burn;
-settings_MH.N_keep = N_keep;
+settings_MH.N_adapt =N_adapt;
+settings_MH.N_burn =N_burn;
+settings_MH.N_keep =N_keep;
 settings_MH.keep_every = keep_every;
 settings_MH.N_draws = N_draws;
 settings_MH.n_iter_print = n_iter_print;
 settings_MH.T_use = T_use;
 settings_MH.T_save = T_save;
-settings_MH.start_chol = load_init_state;
+settings_MH.start_chol = load_init_state; %set this to 1 if you load the initial state externally.
  
-if load_init_state == 1
-
-    % load states from a previous run in order to avoid the adaptive and burning steps
-    if strcmp(model, '/rank')
-        load rank_MH_init
-    elseif strcmp(model, '/hank')
-        load hank_MH_init
-    end
-    % use user-provided intial values.
+if load_init_state ==1
+    % Load states from a previous run in order to avoid the adaptive and
+    % burning steps.
+if strcmp(model, '/rank')
+    load rank_MH_init
+elseif strcmp(model, '/hank')
+    load hank_MH_init
+end
+    % Use user-provided intial values.
     init_val = init_val_use;
     var_mat_draws_init = chol_use;
 else
@@ -132,6 +113,8 @@ if behavioral == 1
         var_mat_draws_init = diag([0.1, calvo_p_sd , 0, calvo_w_sd , 0, kappa_sd, psi_uti_sd, 0, m_f_sd ])*var_scale_intial_draws/var_scale;
     end
 
+
+
 else
 
     if strcmp(model, '/rank')
@@ -144,15 +127,13 @@ else
 
 end
 
+
 end
 
 settings_MH.init_val = init_val;
 settings_MH.var_scale = var_scale;
 settings_MH.var_mat_draws_init = var_mat_draws_init;
-
-%----------------------------------------------------------------
-% MH Chain
-%----------------------------------------------------------------
+settings_MH.shocks_match = shocks_match;
 
 [Pi_m_collector, Y_m_collector,R_n_m_collector, m_fit_collector,...
    param_collector, log_posterior_collector,acceptance_collector, ...
@@ -161,8 +142,7 @@ settings_MH.var_mat_draws_init = var_mat_draws_init;
 settings_MH.chol_use = chol_use;
 acc_rate = mean(acceptance_collector);
 
-% report mean acceptance:
-
+% Mean acceptance:
 fprintf('Mean acceptance is %1.4f \n',mean(acceptance_collector));
 fprintf('Pre-adj is %1.4f \n',mean(acceptance_collector(1:N_adapt)));
 fprintf('Post-adj is %1.4f \n',mean(acceptance_collector(N_adapt+1:end)));
@@ -176,13 +156,13 @@ cd([path vintage task '/_results'])
 if behavioral == 1
      if strcmp(model, '/rank')
     
-    save rank_draws_main_behav Pi_m_collector Y_m_collector R_n_m_collector m_fit_collector
-    save rank_draws_other_behav param_collector log_posterior_collector m_fit_collector Pi_m_fit_collector Y_m_fit_collector R_n_m_fit_collector...
+    save rank_draws_main_behav_full Pi_m_collector Y_m_collector R_n_m_collector m_fit_collector
+    save rank_draws_other_behav_full param_collector log_posterior_collector m_fit_collector Pi_m_fit_collector Y_m_fit_collector R_n_m_fit_collector...
          acceptance_collector settings_MH
     
     elseif strcmp(model, '/hank')
-    save hank_draws_main_behav Pi_m_collector Y_m_collector R_n_m_collector m_fit_collector
-    save hank_draws_other_behav param_collector log_posterior_collector m_fit_collector Pi_m_fit_collector Y_m_fit_collector R_n_m_fit_collector...
+    save hank_draws_main_behav_full Pi_m_collector Y_m_collector R_n_m_collector m_fit_collector
+    save hank_draws_other_behav_full param_collector log_posterior_collector m_fit_collector Pi_m_fit_collector Y_m_fit_collector R_n_m_fit_collector...
          acceptance_collector settings_MH
     
      end

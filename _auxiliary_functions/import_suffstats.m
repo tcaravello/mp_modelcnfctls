@@ -6,16 +6,7 @@ if indic_RE == 1
 
 % posterior across models
 
-try
-   load non_behav_models_draws
-catch ME
-   if (strcmp(ME.identifier,'MATLAB:load:couldNotReadFile'))
-      msg = ['The posterior draws for the policy shock matrices were not found. Please check that you correctly downloaded them from the Dropbox link in the Readme.'];
-        causeException = MException('MATLAB:myCode:folder_not_found',msg);
-        ME = addCause(ME,causeException);
-   end
-   rethrow(ME)
-end
+load non_behav_models_draws
 
 Pi_m_all = mean(4 * Pi_m_collector_non_behav,3);
 I_m_all  = mean(4 * R_n_m_collector_non_behav,3);
@@ -30,6 +21,8 @@ I_m_base   = mean(I_m_draws,3);
 Y_m_base   = mean(Y_m_draws,3);
 
 clear m_fit_collector_non_behav model_posterior_non_behav Pi_m_collector_non_behav R_n_m_collector_non_behav Y_m_collector_non_behav
+
+if indic_models == 1
 
 % HANK
 
@@ -61,6 +54,8 @@ clear m_fit_collector model_posterior Pi_m_collector R_n_m_collector Y_m_collect
 
 end
 
+end
+
 %----------------------------------------------------------------
 % Fixed Behavioral Models
 %----------------------------------------------------------------
@@ -69,16 +64,7 @@ if indic_behav == 1
 
 % posterior across models
 
-try
-   load behav_all_models_draws
-catch ME
-   if (strcmp(ME.identifier,'MATLAB:load:couldNotReadFile'))
-      msg = ['The posterior draws for the policy shock matrices were not found. Please check that you correctly downloaded them from the Dropbox link in the Readme.'];
-        causeException = MException('MATLAB:myCode:folder_not_found',msg);
-        ME = addCause(ME,causeException);
-   end
-   rethrow(ME)
-end
+load behav_all_models_draws
 
 Pi_m_all = mean(4 * Pi_m_collector_behav,3);
 I_m_all  = mean(4 * R_n_m_collector_behav,3);
@@ -93,6 +79,8 @@ I_m_base   = mean(I_m_draws,3);
 Y_m_base   = mean(Y_m_draws,3);
 
 clear m_fit_collector_behav model_posterior_behav Pi_m_collector_behav R_n_m_collector_behav Y_m_collector_behav
+
+if indic_models == 1
 
 % HANK
 
@@ -121,6 +109,9 @@ I_m_rank_draws  = 4 * R_n_m_collector;
 Y_m_rank_draws  = Y_m_collector;
 
 clear m_fit_collector model_posterior Pi_m_collector R_n_m_collector Y_m_collector
+
+end
+
 end
 
 %----------------------------------------------------------------
@@ -131,16 +122,7 @@ if indic_joint == 1
 
 % posterior across models
 
-try
-   load all_models_draws
-catch ME
-   if (strcmp(ME.identifier,'MATLAB:load:couldNotReadFile'))
-      msg = ['The posterior draws for the policy shock matrices were not found. Please check that you correctly downloaded them from the Dropbox link in the Readme.'];
-        causeException = MException('MATLAB:myCode:folder_not_found',msg);
-        ME = addCause(ME,causeException);
-   end
-   rethrow(ME)
-end
+load all_models_draws
 
 Pi_m_all = mean(4 * Pi_m_collector,3);
 I_m_all  = mean(4 * R_n_m_collector,3);
@@ -155,6 +137,8 @@ I_m_base   = mean(I_m_draws,3);
 Y_m_base   = mean(Y_m_draws,3);
 
 clear m_fit_collector model_posterior Pi_m_collector R_n_m_collector Y_m_collector
+
+if indic_models == 1
 
 % HANK
 
@@ -211,5 +195,7 @@ I_m_brank_draws  = 4 * R_n_m_collector;
 Y_m_brank_draws  = Y_m_collector;
 
 clear m_fit_collector model_posterior Pi_m_collector R_n_m_collector Y_m_collector
+
+end
 
 end

@@ -1,0 +1,62 @@
+function [y, T, residual, g1] = static_9(y, x, params, sparse_rowval, sparse_colval, sparse_colptr, T)
+residual=NaN(11, 1);
+  T(1)=params(14)/(1+params(35)/100)/(1-params(14)/(1+params(35)/100));
+  residual(1)=(y(27))-(y(26)*params(20)+y(15)*1/(1-params(14)/(1+params(35)/100))-y(15)*T(1));
+  T(2)=1-(1-params(12))/(1+params(35)/100);
+  T(3)=(1+params(35)/100)^2;
+  T(4)=params(11)*T(3);
+  residual(2)=(y(13))-(y(13)*(1-T(2))+T(2)*y(16)+y(9)*T(2)*T(4));
+  residual(3)=(y(6))-(params(9)*y(23)+(1-params(9))*y(27));
+  residual(4)=(y(22))-(y(23)*1/(params(10)/(1-params(10))));
+  residual(5)=(y(23))-(y(27)+y(26)-y(24));
+  residual(6)=(y(24))-(y(22)+y(13));
+  T(5)=(1+params(35)/100)*1/(1+params(6)/100)*(1+params(35)/100)^(-params(13));
+  residual(7)=(y(16))-(y(9)+1/(1+T(5))*(y(25)*1/T(4)+y(16)+y(16)*T(5)));
+  T(6)=(1/(1+params(6)/100))^(-1)*(1+params(35)/100)^params(13);
+  T(7)=T(6)-(1-params(12));
+  T(8)=params(15)*((1-params(9))/params(9)*T(7)/(params(9)^params(9)*(1-params(9))^(1-params(9))/(params(15)*T(7)^params(9)))^(1/(1-params(9))))^(params(9)-1);
+  T(9)=(1+params(35)/100)*T(2)*T(8);
+  residual(8)=(y(3))-(y(8)+(1-params(36)-T(9))*y(15)+T(9)*y(16)+T(7)*T(8)*y(22));
+  T(10)=(1-params(14)/(1+params(35)/100))/(params(13)*(1+params(14)/(1+params(35)/100)));
+  residual(9)=(y(25))-(y(7)*1/T(10)-y(28)+y(23)*T(7)/T(6)+y(25)*(1-params(12))/T(6));
+  residual(10)=(y(3))-(params(15)*(y(6)+params(9)*y(24)+(1-params(9))*y(26)));
+  T(11)=params(14)/(1+params(35)/100)/(1+params(14)/(1+params(35)/100));
+  residual(11)=(y(15))-(y(7)+y(15)*T(11)+y(15)*1/(1+params(14)/(1+params(35)/100))-T(10)*y(28));
+if nargout > 3
+    g1_v = NaN(29, 1);
+g1_v(1)=(-(1/(1-params(14)/(1+params(35)/100))-T(1)));
+g1_v(2)=(-(1-params(36)-T(9)));
+g1_v(3)=1-(T(11)+1/(1+params(14)/(1+params(35)/100)));
+g1_v(4)=1-(1-T(2));
+g1_v(5)=(-1);
+g1_v(6)=1;
+g1_v(7)=(-(1-params(9)));
+g1_v(8)=(-1);
+g1_v(9)=1;
+g1_v(10)=(-1);
+g1_v(11)=(-(T(7)*T(8)));
+g1_v(12)=(-params(20));
+g1_v(13)=(-1);
+g1_v(14)=(-(params(15)*(1-params(9))));
+g1_v(15)=1;
+g1_v(16)=1;
+g1_v(17)=(-(params(15)*params(9)));
+g1_v(18)=(-(1/(1+T(5))*1/T(4)));
+g1_v(19)=1-(1-params(12))/T(6);
+g1_v(20)=(-T(2));
+g1_v(21)=(-T(9));
+g1_v(22)=(-params(9));
+g1_v(23)=(-(1/(params(10)/(1-params(10)))));
+g1_v(24)=1;
+g1_v(25)=(-(T(7)/T(6)));
+g1_v(26)=1;
+g1_v(27)=1;
+g1_v(28)=1;
+g1_v(29)=T(10);
+    if ~isoctave && matlab_ver_less_than('9.8')
+        sparse_rowval = double(sparse_rowval);
+        sparse_colval = double(sparse_colval);
+    end
+    g1 = sparse(sparse_rowval, sparse_colval, g1_v, 11, 11);
+end
+end

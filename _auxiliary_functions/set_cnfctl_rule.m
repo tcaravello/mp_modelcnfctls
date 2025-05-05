@@ -38,7 +38,7 @@ end
 
 if cnfctl_tylr == 1
 
-rho_ib = 0.8;
+rho_ib = 0;
 phi_pi = 1.5;
 phi_y  = 0.5;
 

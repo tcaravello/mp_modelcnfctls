@@ -1,16 +1,16 @@
-%% WOLD SHOCKS IRFs (early sample)
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+%% WOLD SHOCKS IRFs
+% Tomas Caravello, Alisdair McKay, Christian Wolf
+% this version: May 5, 2025
 
 %% HOUSEKEEPING
- 
+
 clc
 clear all
 close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
 
-path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/varplus';
+path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/mp_modelcnfctls';
 vintage = '';
 task = '/var_inputs';
 
@@ -18,7 +18,7 @@ addpath([path vintage '/_auxiliary_functions'])
 addpath([path vintage task '/_data/main'])
 
 save_results = 1;
-
+save_draws = 0;  %0 if you don't want to save draws of Wold IRFs. This is to save space, since they are not used in the paper.
 cd([path vintage task]);
 
 %% DATA
@@ -37,7 +37,7 @@ series = series(2:end);
 gdp       = data(:,2);
 unemp     = data(:,3);
 ffr       = 4 * data(:,4);
-infl      = 400 * data(:,5);
+infl      = 100 * 4 * data(:,5);
 inv       = data(:,6);
 cons      = data(:,7);
 lab       = data(:,8);
@@ -45,7 +45,7 @@ lab_share = data(:,9);
 lab_prod  = data(:,10);
 tfp       = data(:,11);
 
-% macro outcome transformations
+% macro outcome transformations: Hamilton Filter the desired variables.
 
 gdp       = 100 * stat_transform(gdp,1);
 inv       = 100 * stat_transform(inv,1);
@@ -64,11 +64,11 @@ enddate = find(date == 2007);
 
 vardata = [unemp gdp inv cons lab tfp lab_prod lab_share infl ffr]; 
 series_names = {'Unemployment', 'Output', 'Investment', 'Consumption','Hours',...
-    'TFP', 'Labor Productivity', 'Labor Share', 'Inflation', 'FFR'};
+    'TFP', 'Labor Productivity', 'Labor Share', 'Inflation', 'Interest Rate'};
 
 vardata = vardata(startdate:enddate,:);
 
-% de-trend
+% de-trend: this just demeans the data for inflation, FFR and unemployment.
 
 vardata = detrend(vardata);
 
@@ -76,7 +76,6 @@ vardata = detrend(vardata);
 
 n_lags     = 4;                    % number of lags
 constant   = 0;                    % constant? 0: no constant, 1: just constant, 2: constant and linear trend.
-                                   % (no need since already de-trended data)
 
 IRF_hor    = 250;
 n_draws    = 1000;
@@ -87,6 +86,8 @@ n_y        = size(vardata,2);
 %----------------------------------------------------------------
 % Estimate Reduced-Form VAR
 %----------------------------------------------------------------
+
+% Prior is very loose so this is essentially equivalent to standard VAR.
 
 T = size(vardata,1) - n_lags;
 [B_draws,Sigma_draws,B_OLS,Sigma_OLS] = bvar_fn(vardata,n_lags,constant,n_draws);
@@ -100,7 +101,8 @@ T = size(vardata,1) - n_lags;
 Sigma_u   = Sigma_OLS;
 B         = B_OLS;
 
-% benchmark rotation
+% benchmark rotation: since we need an arbitrary rotation, we just use
+% cholesky, but any other will do. Ordering does not matter here.
 
 bench_rot = chol(Sigma_u,'lower');
 
@@ -141,6 +143,8 @@ IS.Theta_med = NaN(n_y,n_y,IRF_hor);
 IS.Theta_lb  = NaN(n_y,n_y,IRF_hor);
 IS.Theta_ub  = NaN(n_y,n_y,IRF_hor);
 
+% do the same for each posterior draw.
+
 for i_draw = 1:n_draws
 
 % extract VAR inputs
@@ -178,7 +182,7 @@ end
 
 % collect results
 
-%IS.Theta(:,:,:,i_draw) = squeeze(IRF_idraw);
+IS.Theta(:,:,:,i_draw) = squeeze(IRF_idraw);
 
 end
 
@@ -227,14 +231,15 @@ IS.freq_var = diag(freq_var_fn(IS.Theta_OLS,omega_1,omega_2));
 
 %% SAVE RESULTS
 
+IS_wold = IS;
+if save_draws == 0
+    IS_wold = rmfield(IS_wold,'Theta');
+end
+%%
 if save_results == 1
 
-    IS_wold = IS;
-    
     cd([path vintage task '/_results']);
-    
     save wold_results_early IS_wold series_names
-    
     cd([path vintage task]);
 
 end

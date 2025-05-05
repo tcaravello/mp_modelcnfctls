@@ -1,6 +1,5 @@
 %% GET SW MODEL MONETARY POLICY CAUSAL EFFECTS
 % Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
 
 %% HOUSEKEEPING
 
@@ -10,8 +9,8 @@ close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
 
-path = '/Users/christianwolf/Dropbox/Research/mp_modelcnfctls/code/replication';
-vintage = '/24_09_03';
+path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/mp_modelcnfctls';
+vintage = '';
 task = '/invertibility';
 
 addpath([path vintage task '/sw_sequence/_get_mp_irfs/_auxiliary_functions'])

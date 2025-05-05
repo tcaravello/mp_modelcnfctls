@@ -1,6 +1,5 @@
 %% ANALYZE SAMPLING RESULTS
 % Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
 
 %% HOUSEKEEPING
 

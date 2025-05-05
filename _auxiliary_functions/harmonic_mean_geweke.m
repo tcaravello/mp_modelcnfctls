@@ -2,6 +2,8 @@ function [marginal_lik, quantiles_use] = harmonic_mean_geweke(param_collector, l
 
 global prior_zeta_p prior_zeta_w
 
+scaling_factor_det = 100; %do this for better numerical performance.
+
 if size(param_collector,1) == 7
 
 
@@ -13,8 +15,9 @@ N_IRFS = settings_HM.N_IRFS;
 param_p = param_collector(3,1);
 param_w = param_collector(5,1);
 
-log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) - 0.5*log(det(target_Sigma_inv)) + log(prior_zeta_p(param_p)) + log(prior_zeta_w(param_w));
+log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) - 0.5*(log(det(target_Sigma_inv/scaling_factor_det))+N_IRFS*log(scaling_factor_det)) + log(prior_zeta_p(param_p)) + log(prior_zeta_w(param_w));
 
+%log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) + log(prior_zeta_p(param_p)) + log(prior_zeta_w(param_w));
 n_param = length(index_use);
 N_use = length(log_posterior_collector);
 param_use = param_collector(index_use,:);
@@ -81,12 +84,12 @@ prior_m_f = @(x) betapdf(x,m_f_a,m_f_b);
 
 
 
-log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) - 0.5*log(det(target_Sigma_inv)) ...
+log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) - 0.5*(log(det(target_Sigma_inv/scaling_factor_det))+N_IRFS*log(scaling_factor_det)) ...
     + log(prior_zeta_p(param_p)) + log(prior_zeta_w(param_w)) + log(prior_m_d(param_m_d)) + log(prior_m_f(param_m_f));
 
    elseif length(index_use) == 7
 
-log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) - 0.5*log(det(target_Sigma_inv)) ...
+log_posterior_use = log_posterior_collector + (N_IRFS/2)*log(2*pi) - 0.5*(log(det(target_Sigma_inv/scaling_factor_det))+N_IRFS*log(scaling_factor_det)) ...
     + log(prior_zeta_p(param_p)) + log(prior_zeta_w(param_w));
     end
 

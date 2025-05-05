@@ -1,18 +1,9 @@
 %% DECOMPOSE REAL RATE CAUSAL EFFECTS
 % Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
 
 %% HOUSEKEEPING
 
 experiment = '/applications/hist_scenario';
-
-save_fig = 1;
-
-addpath([path vintage '/suff_stats/ratex']);
-addpath([path vintage '/suff_stats/behavioral']);
-addpath([path vintage '/suff_stats/mix']);
-addpath([path vintage '/_auxiliary_functions'])
-addpath([path vintage '/var_inputs/_results']);
 
 cd([path vintage experiment]);
 
@@ -67,6 +58,14 @@ clear var_forecasts_OLS var_history
 %----------------------------------------------------------------
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
+
+cnfctl_0y       = 0; % output gap targeting
+cnfctl_0pi      = 0; % inflation targeting
+cnfctl_0ib      = 0; % nominal rate peg
+cnfctl_tylr     = 0; % Taylor rule
+cnfctl_ngdp     = 0; % NGDP targeting
+cnfctl_ibtarget = 0; % rate target
+cnfctl_optpol   = 1; % optimal dual mandate
 
 set_cnfctl_rule
 
@@ -173,7 +172,7 @@ left_pos = [gapsize_edges, gapsize_edges + gapsize + plotwidth, gapsize_edges + 
 % Interest Rate Decomposition Plot
 %----------------------------------------------------------------
 
-cd([path vintage experiment '/_results/RE']);
+cd([path vintage experiment '/_results/re']);
 
 max_hor = 100;
 xdates  = date_ext(fcst_date)+0.25*(0:max_hor-1);
@@ -244,7 +243,7 @@ title('Contribution of $r$ to $\pi_{2022Q2}$','interpreter','latex','fontsize',2
 xlabel('Date','interpreter','latex','FontSize',20)
 xlim([x_min x_max])
 ylabel('\% Deviation','interpreter','latex','FontSize',20)
-ylim([-3 3])
+ylim([-6 3])
 legend({'RANK','B-RANK'},'Location','Northeast','fontsize',18,'interpreter','latex')
 grid on
 hold off

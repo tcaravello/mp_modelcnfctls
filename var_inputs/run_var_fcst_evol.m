@@ -1,6 +1,6 @@
 %% VAR-IMPLIED FORECASTS FOR HISTORICAL EVOLUTION
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+% Tomas Caravello, Alisdair McKay, Christian Wolf
+% this version: June 7, 2024
 
 %% HOUSEKEEPING
  
@@ -10,7 +10,7 @@ close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
 
-path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/varplus';
+path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/mp_modelcnfctls';
 vintage = '';
 task = '/var_inputs';
 
@@ -182,9 +182,7 @@ var_forecasts_ub  = squeeze(quantile(var_forecasts_draws,0.84,3));
 if save_results == 1
 
     cd([path vintage task '/_results']);
-    
     save fcst_evol_results var_forecasts_OLS var_history det_coeff det_X dates_fcst fcst_lag date series_names
-    
     cd([path vintage task]);
 
 end

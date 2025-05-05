@@ -1,6 +1,6 @@
 %% MBC SHOCK IRFs
-% Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 09/03/2024
+% Tomas Caravello, Alisdair McKay, Christian Wolf
+% this version: 10/10/2023
 
 %% HOUSEKEEPING
  
@@ -10,8 +10,8 @@ close all
 
 warning('off','MATLAB:dispatcher:nameConflict')
 
-path = '/Users/tomyc/Dropbox (MIT)/mp_modelcnfctls/code/github_public/varplus';
-vintage = '';
+path = '/Users/christianwolf/Dropbox/Research/mp_modelcnfctls/code/replication';
+vintage = '/25_04_25';
 task = '/var_inputs';
 
 addpath([path vintage '/_auxiliary_functions'])
@@ -160,9 +160,7 @@ IS_MBC  = mirf;
 if save_results == 1
 
     cd([path vintage task '/_results']);
-    
     save mbc_results IS_MBC series_names
-    
     cd([path vintage task]);
-    
+
 end

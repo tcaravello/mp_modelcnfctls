@@ -1,14 +1,13 @@
+
 global Lambda_w  Lambda_l  Lambda_r  Lambda_d  Lambda_tau  Lambda_tau_l ...
     C_w  C_l  C_r  C_d  C_tau  C_tau_l  A_H_w  A_H_l  A_H_r  A_H_d  A_H_tau  A_H_tau_l
+
 
 if strcmp(model, '/rank') 
 
 elseif strcmp(model, '/hank')
-
 addpath([path vintage '/_auxiliary_functions/_hank_inputs'])
-
-% get HANK Jacobians
-
+% get Hank Jacobians
 if load_hank == 1
     load inputs_hank.mat
 else
@@ -38,6 +37,8 @@ A_H_d       = A_H_d(1:T,1:T);
 A_H_tau     = A_H_tau(1:T,1:T);
 A_H_tau_l   = A_H_tau_l(1:T,1:T);
 
+
+%%%%%%%%%%%%%%%%%%%%%  END HANK  %%%%%%%%%%%%%%%%%%%%%%%%%%%
 else
     error('Select a valid model name')
 end

@@ -5,6 +5,7 @@ delete SW_Model_results.mat
 delete SW_Model_set_auxiliary_variables.m
 delete SW_Model_static.m
 % rmdir SW_Model/Output
+pause(5)
 rmdir('SW_Model','s')
 load polfunction
 clc
