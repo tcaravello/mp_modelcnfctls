@@ -1,4 +1,4 @@
-# varplus
+# mp_modelcnfctls
  Replication Files for "Evaluating Monetary Policy Counterfactuals: (When) Do We Need Structural Models?" by Caravello, McKay & Wolf
 
 Tested in Matlab R2022b on a Dell Inspiron 15.
