@@ -5,7 +5,7 @@
 
 experiment = '/applications/hist_evol';
 
-save_fig = 1;
+%save_fig = 1;
 cd([path vintage experiment]);
 
 %% IMPORTS & SETTINGS
@@ -53,13 +53,15 @@ clear var_forecasts_OLS var_history
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
 
-cnfctl_0y       = 0; % output gap targeting
-cnfctl_0pi      = 0; % inflation targeting
-cnfctl_0ib      = 0; % nominal rate peg
-cnfctl_tylr     = 0; % Taylor rule
-cnfctl_ngdp     = 0; % NGDP targeting
-cnfctl_ibtarget = 0; % rate target
-cnfctl_optpol   = 1; % optimal dual mandate
+% already set in the main file.
+
+% cnfctl_0y       = 0; % output gap targeting
+% cnfctl_0pi      = 0; % inflation targeting
+% cnfctl_0ib      = 0; % nominal rate peg
+% cnfctl_tylr     = 0; % Taylor rule
+% cnfctl_ngdp     = 0; % NGDP targeting
+% cnfctl_ibtarget = 0; % rate target
+% cnfctl_optpol   = 1; % optimal dual mandate
 
 set_cnfctl_rule
 
@@ -120,10 +122,10 @@ i_x   = i_base_x(:,t_simul);
 if cnfctl_optpol == 1
     wedge = lambda_di * I_m' * [i_history(fcst_date-1); zeros(T-1,1)];
 elseif cnfctl_tylr == 1
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
     wedge(1) = rho_ib * i_history(fcst_date-1);
 else
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
 end
 
 [pi_path, y_path, i_path] = cnfctl_pred_fn(A_pi,A_y,A_i,wedge,Pi_m,Y_m,I_m,pi_x,y_x,i_x,1);

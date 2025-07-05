@@ -5,7 +5,7 @@
 
 experiment = '/applications/second_moments';
 
-save_fig = 1;
+%save_fig = 1;
 
 addpath([path vintage '/_auxiliary_functions'])
 addpath([path vintage '/var_inputs/_results']);
@@ -60,13 +60,15 @@ clear IS_MBC
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
 
-cnfctl_0y       = 0; % output gap targeting
-cnfctl_0pi      = 0; % inflation targeting
-cnfctl_0ib      = 0; % nominal rate peg
-cnfctl_tylr     = 0; % Taylor rule
-cnfctl_ngdp     = 0; % NGDP targeting
-cnfctl_ibtarget = 0; % rate target
-cnfctl_optpol   = 1; % optimal dual mandate
+% already set in the main file.
+
+% cnfctl_0y       = 0; % output gap targeting
+% cnfctl_0pi      = 0; % inflation targeting
+% cnfctl_0ib      = 0; % nominal rate peg
+% cnfctl_tylr     = 0; % Taylor rule
+% cnfctl_ngdp     = 0; % NGDP targeting
+% cnfctl_ibtarget = 0; % rate target
+% cnfctl_optpol   = 1; % optimal dual mandate
 
 set_cnfctl_rule
 

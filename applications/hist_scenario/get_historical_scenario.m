@@ -5,7 +5,7 @@
 
 experiment = '/applications/hist_scenario';
 
-save_fig = 1;
+%save_fig = 1;
 cd([path vintage experiment]);
 
 %% IMPORTS & SETTINGS
@@ -53,13 +53,15 @@ clear var_forecasts_OLS var_history
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
 
-cnfctl_0y       = 0; % output gap targeting
-cnfctl_0pi      = 0; % inflation targeting
-cnfctl_0ib      = 0; % nominal rate peg
-cnfctl_tylr     = 0; % Taylor rule
-cnfctl_ngdp     = 0; % NGDP targeting
-cnfctl_ibtarget = 0; % rate target
-cnfctl_optpol   = 1; % optimal dual mandate
+% this is already set in the main file.
+
+% cnfctl_0y       = 0; % output gap targeting
+% cnfctl_0pi      = 0; % inflation targeting
+% cnfctl_0ib      = 0; % nominal rate peg
+% cnfctl_tylr     = 0; % Taylor rule
+% cnfctl_ngdp     = 0; % NGDP targeting
+% cnfctl_ibtarget = 0; % rate target
+% cnfctl_optpol   = 1; % optimal dual mandate
 
 set_cnfctl_rule;
 
