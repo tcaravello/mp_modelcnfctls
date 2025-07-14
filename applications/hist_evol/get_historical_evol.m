@@ -143,7 +143,7 @@ for t_simul = 2:fcst_hor
     y_x   = y_base_x(:,t_simul)  - [y_base_x(2:end,t_simul-1);0];
     i_x   = i_base_x(:,t_simul)  - [i_base_x(2:end,t_simul-1);0];
     
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
 
     % construct counterfactual response to forecast revision
     [d_pi, d_y, d_i] = cnfctl_pred_fn(A_pi,A_y,A_i,wedge,Pi_m,Y_m,I_m,pi_x,y_x,i_x,1);
@@ -203,10 +203,10 @@ i_x   = i_base_x(:,t_simul);
 if cnfctl_optpol == 1
     wedge = lambda_di * I_m_base' * [i_history(fcst_date-1); zeros(T-1,1)];
 elseif cnfctl_tylr == 1
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
     wedge(1) = rho_ib * i_history(fcst_date-1);
 else
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
 end
 
 [pi_path, y_path, i_path] = cnfctl_pred_fn(A_pi,A_y,A_i,wedge,Pi_m_base,Y_m_base,I_m_base,pi_x,y_x,i_x,1);
@@ -223,7 +223,7 @@ for t_simul = 2:fcst_hor
     pi_x  = pi_base_x(:,t_simul) - [pi_base_x(2:end,t_simul-1);0];
     y_x   = y_base_x(:,t_simul)  - [y_base_x(2:end,t_simul-1);0];
     i_x   = i_base_x(:,t_simul)  - [i_base_x(2:end,t_simul-1);0];
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
 
    % construct counterfactual response to forecast revision
     [d_pi, d_y, d_i] = cnfctl_pred_fn(A_pi,A_y,A_i,wedge,Pi_m_base,Y_m_base,I_m_base,pi_x,y_x,i_x,1);
@@ -289,10 +289,10 @@ i_x   = i_base_x(:,t_simul);
 if cnfctl_optpol == 1
     wedge = lambda_di * I_m' * [i_history(fcst_date-1); zeros(T-1,1)];
 elseif cnfctl_tylr == 1
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
     wedge(1) = rho_ib * i_history(fcst_date-1);
 else
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
 end
 
 [pi_path, y_path, i_path] = cnfctl_pred_fn(A_pi,A_y,A_i,wedge,Pi_m,Y_m,I_m,pi_x,y_x,i_x,1);
@@ -310,7 +310,7 @@ for t_simul = 2:fcst_hor
     y_x   = y_base_x(:,t_simul)  - [y_base_x(2:end,t_simul-1);0];
     i_x   = i_base_x(:,t_simul)  - [i_base_x(2:end,t_simul-1);0];
     
-    wedge = zeros(shock_max,1);
+    wedge = zeros(T,1);
 
     % construct counterfactual response to forecast revision
     [d_pi, d_y, d_i] = cnfctl_pred_fn(A_pi,A_y,A_i,wedge,Pi_m,Y_m,I_m,pi_x,y_x,i_x,1);
