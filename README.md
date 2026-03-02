@@ -18,9 +18,8 @@ To ensure that all codes run, the variable "path"---located near the top of the 
 [applications](https://github.com/tcaravello/varplus/tree/main/applications): creates Table 5.1 and Figures 6-9, D.1-D.2
 
 * [second\_moments](https://github.com/tcaravello/varplus/tree/main/applications/second_moments): creates Table 5.1 and Figures 6, 7, 8 and D.1-D.2
-* [hist\_evol](https://github.com/tcaravello/varplus/tree/main/applications/hist_evol): creates Figures 7
-* [hist\_scenario](https://github.com/tcaravello/varplus/tree/main/applications/hist_scenario): creates Figures 8
-* decompose\_realrates\_brank: creates Figure 9
+* [hist\_evol](https://github.com/tcaravello/varplus/tree/main/applications/hist_evol): creates Figure 7
+* [hist\_scenario](https://github.com/tcaravello/varplus/tree/main/applications/hist_scenario): creates Figures 8 and 9
 
 [invertibility](https://github.com/tcaravello/varplus/tree/main/invertibility): functions used to create Figure 1 of the paper.
 
