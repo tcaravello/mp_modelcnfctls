@@ -5,10 +5,6 @@
 
 experiment = '/applications/second_moments';
 
-%save_fig = 1;
-
-addpath([path vintage '/_auxiliary_functions'])
-addpath([path vintage '/var_inputs/_results']);
 cd([path vintage experiment]);
 
 %% IMPORTS & SETTINGS
@@ -17,9 +13,12 @@ cd([path vintage experiment]);
 % Experiment
 %----------------------------------------------------------------
 
-% show individual models?
-     
-indic_models = 0;
+
+% counterfactual display options
+
+indic_emp    = 1; % report empirical counterfactuals?
+indic_models = 0; % report all four models?
+
 
 %----------------------------------------------------------------
 % Policy Shock Sufficient Statistics
@@ -27,20 +26,12 @@ indic_models = 0;
 
 % import
 
-if indic_emp == 0
-
-    import_suffstats
-
-elseif indic_emp == 1
-
-    import_suffstats_emp
-
-end
+import_suffstats
 
 % sizes
 
-T       = size(Pi_m_draws,1);
-n_draws = size(Pi_m_draws,3);
+T       = size(Pi_m_rank_draws,1);
+n_draws = size(Pi_m_rank_draws,3);
 
 %----------------------------------------------------------------
 % MBC IRFs
@@ -60,16 +51,6 @@ clear IS_MBC
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
 
-% already set in the main file.
-
-% cnfctl_0y       = 0; % output gap targeting
-% cnfctl_0pi      = 0; % inflation targeting
-% cnfctl_0ib      = 0; % nominal rate peg
-% cnfctl_tylr     = 0; % Taylor rule
-% cnfctl_ngdp     = 0; % NGDP targeting
-% cnfctl_ibtarget = 0; % rate target
-% cnfctl_optpol   = 1; % optimal dual mandate
-
 set_cnfctl_rule
 
 %----------------------------------------------------------------
@@ -79,7 +60,7 @@ set_cnfctl_rule
 if indic_emp == 0
     shock_max = T; % set = T for all shocks
 else
-    shock_max = size(Pi_m_draws,2);
+    shock_max = size(Pi_m_rank_draws,2);
 end
 
 %% CONSTRUCT MBC SHOCK COUNTERFACTUAL
@@ -94,9 +75,9 @@ for i_draw = 1:n_draws
     
 % get policy shock IRFs
 
-Pi_m = Pi_m_draws(:,1:shock_max,i_draw);
-Y_m  = Y_m_draws(:,1:shock_max,i_draw);
-I_m  = I_m_draws(:,1:shock_max,i_draw);
+Pi_m = Pi_m_rank_draws(:,1:shock_max,i_draw);
+Y_m  = Y_m_rank_draws(:,1:shock_max,i_draw);
+I_m  = I_m_rank_draws(:,1:shock_max,i_draw);
 
 % get the corresponding base sequences
 
@@ -132,16 +113,19 @@ mbc_cnfctl_ub  = quantile(mbc_cnfctl,0.84,3);
 % Individual Models
 %----------------------------------------------------------------
 
-if indic_emp == 0 && indic_models == 1
+if indic_models == 1
 
-n_models          = 2;
-mbc_cnfctl_models = NaN(T,n_y,n_models);
+n_models          = 4;
+
+mbc_cnfctl_models_med = NaN(T,n_y,n_models);
+mbc_cnfctl_models_lb  = NaN(T,n_y,n_models);
+mbc_cnfctl_models_ub  = NaN(T,n_y,n_models);
 
 for i_model = 1:n_models
     
-pi_mbc_cfnctl_tmp = NaN(T,n_draws);
-y_mbc_cfnctl_tmp  = NaN(T,n_draws);
-i_mbc_cfnctl_tmp  = NaN(T,n_draws);
+pi_mbc_cnfctl_tmp = NaN(T,n_draws);
+y_mbc_cnfctl_tmp  = NaN(T,n_draws);
+i_mbc_cnfctl_tmp  = NaN(T,n_draws);
     
 for i_draw = 1:n_draws
     
@@ -158,6 +142,18 @@ elseif i_model == 2
     Pi_m = Pi_m_hank_draws(:,1:shock_max,i_draw);
     Y_m  = Y_m_hank_draws(:,1:shock_max,i_draw);
     I_m  = I_m_hank_draws(:,1:shock_max,i_draw);
+
+elseif i_model == 3
+
+    Pi_m = Pi_m_brank_draws(:,1:shock_max,i_draw);
+    Y_m  = Y_m_brank_draws(:,1:shock_max,i_draw);
+    I_m  = I_m_brank_draws(:,1:shock_max,i_draw);
+
+elseif i_model == 4
+
+    Pi_m = Pi_m_bhank_draws(:,1:shock_max,i_draw);
+    Y_m  = Y_m_bhank_draws(:,1:shock_max,i_draw);
+    I_m  = I_m_bhank_draws(:,1:shock_max,i_draw);
 
 end
 
@@ -181,21 +177,108 @@ elseif cnfctl_optpol == 1
 
 end
 
-pi_mbc_cfnctl_tmp(:,i_draw) = pi_mbc_cnfctl;
-y_mbc_cfnctl_tmp(:,i_draw)  = y_mbc_cnfctl;
-i_mbc_cfnctl_tmp(:,i_draw)  = i_mbc_cnfctl;
+pi_mbc_cnfctl_tmp(:,i_draw) = pi_mbc_cnfctl;
+y_mbc_cnfctl_tmp(:,i_draw)  = y_mbc_cnfctl;
+i_mbc_cnfctl_tmp(:,i_draw)  = i_mbc_cnfctl;
 
 end
 
-mbc_cnfctl_models(:,1,i_model) = mean(pi_mbc_cfnctl_tmp,2);
-mbc_cnfctl_models(:,2,i_model) = mean(y_mbc_cfnctl_tmp,2);
-mbc_cnfctl_models(:,3,i_model) = mean(i_mbc_cfnctl_tmp,2);
+mbc_cnfctl_models_lb(:,1,i_model)  = quantile(pi_mbc_cnfctl_tmp,0.16,2);
+mbc_cnfctl_models_med(:,1,i_model) = quantile(pi_mbc_cnfctl_tmp,0.5,2);
+mbc_cnfctl_models_ub(:,1,i_model)  = quantile(pi_mbc_cnfctl_tmp,0.84,2);
+
+mbc_cnfctl_models_lb(:,2,i_model)  = quantile(y_mbc_cnfctl_tmp,0.16,2);
+mbc_cnfctl_models_med(:,2,i_model) = quantile(y_mbc_cnfctl_tmp,0.5,2);
+mbc_cnfctl_models_ub(:,2,i_model)  = quantile(y_mbc_cnfctl_tmp,0.84,2);
+
+mbc_cnfctl_models_lb(:,3,i_model)  = quantile(i_mbc_cnfctl_tmp,0.16,2);
+mbc_cnfctl_models_med(:,3,i_model) = quantile(i_mbc_cnfctl_tmp,0.5,2);
+mbc_cnfctl_models_ub(:,3,i_model)  = quantile(i_mbc_cnfctl_tmp,0.84,2);
 
 end
 
 end
 
 clear pi_mbc_cfnctl_tmp y_mbc_cfnctl_tmp i_mbc_cfnctl_tmp
+
+%----------------------------------------------------------------
+% Empirics
+%----------------------------------------------------------------
+
+if indic_emp == 1
+
+% imports
+
+import_suffstats_emp
+
+% sizes
+
+T       = size(Pi_m_draws,1);
+n_draws = size(Pi_m_draws,3);
+
+% shock space
+
+shock_max = size(Pi_m_draws,2);
+
+% counterfactuals
+
+mbc_cnfctl_emp_med = NaN(T,n_y);
+mbc_cnfctl_emp_lb  = NaN(T,n_y);
+mbc_cnfctl_emp_ub  = NaN(T,n_y);
+
+pi_mbc_cnfctl_tmp = NaN(T,n_draws);
+y_mbc_cnfctl_tmp  = NaN(T,n_draws);
+i_mbc_cnfctl_tmp  = NaN(T,n_draws);
+
+for i_draw = 1:n_draws
+    
+% get policy shock IRFs
+
+Pi_m = Pi_m_draws(:,1:shock_max,i_draw);
+Y_m  = Y_m_draws(:,1:shock_max,i_draw);
+I_m  = I_m_draws(:,1:shock_max,i_draw);
+
+% get the corresponding base sequences
+
+pi_mbc = mbc_base(:,1);
+y_mbc  = mbc_base(:,2);
+i_mbc  = mbc_base(:,3);
+
+% find best fit to counterfactual rule
+
+if cnfctl_optpol == 0
+
+[pi_mbc_cnfctl,y_mbc_cnfctl,i_mbc_cnfctl] = cnfctl_fn(A_pi,A_y,A_i,wedge,...
+    Pi_m,Y_m,I_m,pi_mbc,y_mbc,i_mbc);
+
+elseif cnfctl_optpol == 1
+
+[pi_mbc_cnfctl,y_mbc_cnfctl,i_mbc_cnfctl] = optpol_fn(W_pi,W_y,W_i,...
+    Pi_m,Y_m,I_m,pi_mbc,y_mbc,i_mbc);
+
+end
+
+pi_mbc_cnfctl_tmp(:,i_draw) = pi_mbc_cnfctl;
+y_mbc_cnfctl_tmp(:,i_draw)  = y_mbc_cnfctl;
+i_mbc_cnfctl_tmp(:,i_draw)  = i_mbc_cnfctl;
+
+end
+
+mbc_cnfctl_emp_lb(:,1)  = quantile(pi_mbc_cnfctl_tmp,0.16,2);
+mbc_cnfctl_emp_med(:,1) = quantile(pi_mbc_cnfctl_tmp,0.5,2);
+mbc_cnfctl_emp_ub(:,1)  = quantile(pi_mbc_cnfctl_tmp,0.84,2);
+
+mbc_cnfctl_emp_lb(:,2)  = quantile(y_mbc_cnfctl_tmp,0.16,2);
+mbc_cnfctl_emp_med(:,2) = quantile(y_mbc_cnfctl_tmp,0.5,2);
+mbc_cnfctl_emp_ub(:,2)  = quantile(y_mbc_cnfctl_tmp,0.84,2);
+
+mbc_cnfctl_emp_lb(:,3)  = quantile(i_mbc_cnfctl_tmp,0.16,2);
+mbc_cnfctl_emp_med(:,3) = quantile(i_mbc_cnfctl_tmp,0.5,2);
+mbc_cnfctl_emp_ub(:,3)  = quantile(i_mbc_cnfctl_tmp,0.84,2);
+
+end
+
+clear pi_mbc_cnfctl_tmp y_mbc_cnfctl_tmp i_mbc_cnfctl_tmp
 
 %% PLOT COUNTERFACTUAL IRFs
 
@@ -216,6 +299,8 @@ settings.colors.lblue  = 0.25 * settings.colors.blue + 0.75 * [1 1 1];
 settings.colors.models = [196/255 174/255 120/255; ... % beige
                             204/255 0/255 0/255; ... % red
                             102/255 178/255 255/255]; % blue
+settings.colors.orange = [255/255 153/255 51/255];
+settings.colors.lorange  = 0.25 * settings.colors.orange + 0.75 * [1 1 1];
 
 % plot size
 
@@ -232,21 +317,7 @@ var_order = [2 1 3];
 % MBC Shock
 %----------------------------------------------------------------
 
-if indic_emp == 0
-
-    if indic_RE == 1
-        cd([path vintage experiment '/_results/re']);
-    elseif indic_behav == 1
-        cd([path vintage experiment '/_results/behav']);
-    elseif indic_joint == 1
-        cd([path vintage experiment '/_results/joint']);
-    end
-
-else
-    
-    cd([path vintage experiment '/_results/emp']);
-
-end
+cd([path vintage experiment '/_results']);
 
 figure
 
@@ -266,11 +337,20 @@ plot(0,0,':','Color',settings.colors.black,'LineWidth',4)
 hold on
 jbfill(0,0,0,settings.colors.lblue,settings.colors.lblue,0,1);
 hold on
-if indic_emp == 0 && indic_models
+if indic_emp == 1
+    jbfill(0,0,0,settings.colors.lorange,settings.colors.lblue,0,1);
+    hold on
+end
+if indic_models == 1
     for i_model = 1:n_models
-        plot(0,0,'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
+        if i_model <= 2
+            plot(0,0,'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
+        else
+            plot(0,0,'-.','Color',settings.colors.models(i_model-2,:),'LineWidth',4)
+        end
         hold on
     end
+    hold on
 end
 jbfill(0:1:IRF_hor_plot,(mbc_cnfctl_lb(1:IRF_hor_plot+1,i_y))',(mbc_cnfctl_ub(1:IRF_hor_plot+1,i_y))',...
     settings.colors.lblue,settings.colors.lblue,0,1);
@@ -279,11 +359,23 @@ plot(0:1:IRF_hor_plot,mbc_base(1:IRF_hor_plot+1,i_y),':','Color',settings.colors
 hold on
 plot(0:1:IRF_hor_plot,mbc_cnfctl_med(1:IRF_hor_plot+1,i_y),'Color',settings.colors.blue,'LineWidth',4)
 hold on
-if indic_emp == 0 && indic_models == 1
+if indic_models == 1
     for i_model = 1:n_models
-        plot(0:1:IRF_hor_plot,mbc_cnfctl_models(1:IRF_hor_plot+1,i_y,i_model),'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
-        hold on
+        if i_model <= 2
+            plot(0:1:IRF_hor_plot,mbc_cnfctl_models_med(1:IRF_hor_plot+1,i_y,i_model),'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
+            hold on
+        else
+            plot(0:1:IRF_hor_plot,mbc_cnfctl_models_med(1:IRF_hor_plot+1,i_y,i_model),'-.','Color',settings.colors.models(i_model-2,:),'LineWidth',3)
+            hold on
+        end
     end
+end
+if indic_emp == 1
+    plot(0:1:IRF_hor_plot,mbc_cnfctl_emp_med(1:IRF_hor_plot+1,i_y),'-','Color',settings.colors.orange,'LineWidth',4)
+    hold on
+    jbfill(0:1:IRF_hor_plot,(mbc_cnfctl_emp_lb(1:IRF_hor_plot+1,i_y))',(mbc_cnfctl_emp_ub(1:IRF_hor_plot+1,i_y))',...
+    settings.colors.lorange,settings.colors.lorange,0,0.5);
+    hold on
 end
 % xlim([1 IRF_hor_plot])
 % ylim([-2 2])
@@ -299,10 +391,11 @@ if ii_y == 1
     ylabel('\% Deviation','interpreter','latex','FontSize',20)
 end
 if i_y == 3
-    if indic_emp == 0 && indic_models == 1
-        legend({'Data','Counterfct''l','RANK','HANK'},'Location','Southeast','fontsize',18,'interpreter','latex','NumColumns',2)
-    else
-        legend({'Data','Counterfct''l'},'Location','Southeast','fontsize',18,'interpreter','latex','NumColumns',2)
+    if indic_models == 1
+        legend({'Data','Counterfct''l','RANK','HANK','B-RANK','B-HANK'},...
+            'Location','Southeast','Orientation','horizontal','fontsize',18,'interpreter','latex','NumColumns',2)
+    elseif indic_emp == 1
+        legend({'Data','Hybrid','Semi-structural'},'Location','Southeast','fontsize',18,'interpreter','latex','NumColumns',3)
     end
     
 end
@@ -314,9 +407,8 @@ end
 pos = get(gcf, 'Position');
 set(gcf, 'Position', [pos(1) pos(2) 1.2*2.25*pos(3) 1.1*pos(4)]);
 set(gcf, 'PaperPositionMode', 'auto');
-
 if save_fig == 1
-
 print('mbc_optpol','-dpng');
-
 end
+
+cd([path vintage experiment]);

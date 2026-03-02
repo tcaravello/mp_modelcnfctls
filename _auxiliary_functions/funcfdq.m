@@ -31,6 +31,8 @@ function[eigvec, eigval] =  funcfdq(MX, MY,S,wmin,wmax,idx,weight,grid)
         sp2(isnan(sp2)) = 0.0;
         VTtmp           = 2*pi*real(ifft(sp));
         VDtmp           = 2*pi*real(ifft(sp2));
+        % VD is the matrix that then we need to get that max share of
+        % variance
         VD              = VD+weight(ii)*reshape(VDtmp(1,:)/VTtmp(1),ne,ne);
     end
     [P,D]   = eig(VD);

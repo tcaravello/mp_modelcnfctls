@@ -5,21 +5,9 @@
 
 experiment = '/applications/second_moments';
 
-%save_fig = 1;
-
-addpath([path vintage '/_auxiliary_functions'])
-addpath([path vintage '/var_inputs/_results']);
 cd([path vintage experiment]);
 
 %% IMPORTS & SETTINGS
-
-%----------------------------------------------------------------
-% Experiment
-%----------------------------------------------------------------
-
-% show individual models?
- 
-indic_models = 1;
 
 %----------------------------------------------------------------
 % Policy Shock Sufficient Statistics
@@ -31,8 +19,8 @@ import_suffstats
 
 % sizes
 
-T       = size(Pi_m_draws,1);
-n_draws = size(Pi_m_draws,3);
+T       = size(Pi_m_rank_draws,1);
+n_draws = size(Pi_m_rank_draws,3);
 
 shock_max = T;
 
@@ -63,16 +51,6 @@ clear IS_wold
 % Specify Counterfactual Rule
 %----------------------------------------------------------------
 
-% already set in the main file.
-
-% cnfctl_0y       = 0; % output gap targeting
-% cnfctl_0pi      = 0; % inflation targeting
-% cnfctl_0ib      = 0; % nominal rate peg
-% cnfctl_tylr     = 0; % Taylor rule
-% cnfctl_ngdp     = 0; % NGDP targeting
-% cnfctl_ibtarget = 0; % rate target
-% cnfctl_optpol   = 1; % optimal dual mandate
-
 set_cnfctl_rule
 
 %% CONSTRUCT COUNTERFACTUAL WOLD IRFs
@@ -87,9 +65,9 @@ for i_draw = 1:n_draws
     
 % get policy shock IRFs
 
-Pi_m = Pi_m_draws(:,1:shock_max,i_draw);
-Y_m  = Y_m_draws(:,1:shock_max,i_draw);
-I_m  = I_m_draws(:,1:shock_max,i_draw);
+Pi_m = Pi_m_rank_draws(:,1:shock_max,i_draw);
+Y_m  = Y_m_rank_draws(:,1:shock_max,i_draw);
+I_m  = I_m_rank_draws(:,1:shock_max,i_draw);
 
 for i_shock = 1:n_shocks
 
@@ -335,7 +313,11 @@ for i_model = 1:n_models
     end
 end
 
-cnfctl_models.cov = quantile(cnfctl_models.cov,0.5,4);
+% cnfctl_models.cov = quantile(cnfctl_models.cov,0.5,4);
+cnfctl_models.cov_lb  = quantile(cnfctl_models.cov,0.16,4);
+cnfctl_models.cov_med = quantile(cnfctl_models.cov,0.5,4);
+cnfctl_models.cov_ub  = quantile(cnfctl_models.cov,0.84,4);
+
 
 end
 
@@ -397,13 +379,7 @@ var_order = [2 1 3];
 % Posterior Standard Deviations
 %----------------------------------------------------------------
 
-if indic_RE == 1
-    cd([path vintage experiment '/_results/re']);
-elseif indic_behav == 1
-    cd([path vintage experiment '/_results/behav']);
-elseif indic_joint == 1
-    cd([path vintage experiment '/_results/joint']);
-end
+cd([path vintage experiment '/_results']);
 
 n_kernel = 1001;
 n_gap    = 20;
@@ -464,9 +440,9 @@ hold on
 if indic_models == 1
     for i_model = 1:n_models
         if i_model <= 2
-            plot([sqrt(cnfctl_models.cov(i_y,i_y,i_model)) sqrt(cnfctl_models.cov(i_y,i_y,i_model))],[0 100],'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
+            plot([sqrt(cnfctl_models.cov_med(i_y,i_y,i_model)) sqrt(cnfctl_models.cov_med(i_y,i_y,i_model))],[0 100],'-','Color',settings.colors.models(i_model,:),'LineWidth',4)
         else
-            plot([sqrt(cnfctl_models.cov(i_y,i_y,i_model)) sqrt(cnfctl_models.cov(i_y,i_y,i_model))],[0 100],'-.','Color',settings.colors.models(i_model-2,:),'LineWidth',3)
+            plot([sqrt(cnfctl_models.cov_med(i_y,i_y,i_model)) sqrt(cnfctl_models.cov_med(i_y,i_y,i_model))],[0 100],'-.','Color',settings.colors.models(i_model-2,:),'LineWidth',3)
         end
         hold on
     end
@@ -499,17 +475,13 @@ end
 pos = get(gcf, 'Position');
 set(gcf, 'Position', [pos(1) pos(2) 2.25*pos(3) pos(4)]);
 set(gcf, 'PaperPositionMode', 'auto');
-
-if save_fig == 1 
-
+if save_fig == 1
 if indic_early == 0
     print('cnfctl_histograms_optpol','-dpng');
 elseif indic_early == 1
     print('cnfctl_histograms_optpol_early','-dpng');
 end
-    
 end
-
 % with empirical shocks (density)
 
 if indic_emp == 1
@@ -596,15 +568,51 @@ end
 pos = get(gcf, 'Position');
 set(gcf, 'Position', [pos(1) pos(2) 2.25*pos(3) pos(4)]);
 set(gcf, 'PaperPositionMode', 'auto');
-
-if save_fig == 1 
-
+if save_fig == 1
 if indic_early == 0
     print('cnfctl_histograms_optpol_emp','-dpng');
 elseif indic_early == 1
     print('cnfctl_histograms_optpol_early_emp','-dpng');
 end
-    
-end
 
 end
+end
+
+cd([path vintage experiment]);
+
+
+%% Organize and save data for table
+
+if indic_early ~= 0
+data_std = sqrt(diag(base.cov));
+
+model_cfac = zeros(3,3,4);
+for i = 1:4
+    model_cfac(:,1,i) = sqrt(diag(cnfctl_models.cov_lb(:,:,i)));
+    model_cfac(:,2,i) = sqrt(diag(cnfctl_models.cov_med(:,:,i)));
+    model_cfac(:,3,i) = sqrt(diag(cnfctl_models.cov_ub(:,:,i)));
+end
+
+
+D = [zeros(3,1) data_std zeros(3,1);
+    model_cfac(:,:,1);
+    model_cfac(:,:,2);
+    model_cfac(:,:,3);
+    model_cfac(:,:,4);
+    [sqrt(diag(cnfctl_emp.cov_lb))   sqrt(diag(cnfctl_emp.cov_med))   sqrt(diag(cnfctl_emp.cov_ub))]];
+
+
+RowCat = {'Data', 'RANK', 'HANK', 'B-RANK', 'B-HANK', 'Empirics-only'};
+[tmpa, tmpb] = ndgrid(series_names,RowCat);
+Rowstr = strcat(tmpb(:), '_', tmpa(:));
+
+T = array2table(D, 'VariableNames', {'LB', 'Med', 'UB'},...
+    'RowNames',Rowstr);
+if save_fig == 1
+save('_results/std_table.mat','T');
+end
+disp(T)
+
+end
+
+

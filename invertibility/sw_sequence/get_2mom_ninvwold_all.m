@@ -70,7 +70,7 @@ for i_obs = 1:n_obs
 
 % model run
 
-pause(3) % use this pause to avoid dynare error when overwriting files
+pause(5) % use this pause to avoid dynare error when overwriting files
 
 dynare SW_Model noclearall
 clean_folder_SW

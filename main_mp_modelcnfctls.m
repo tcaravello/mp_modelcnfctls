@@ -1,7 +1,7 @@
 %% REPLICATION FILES: Evaluating Monetary Policy Counterfactuals: (When) Do We Need Structural Models?
 % Tomas Caravello, Alisdair McKay, and Christian Wolf
-% this version: 05/05/2025
-
+% this version:
+% 03/02/2026
 %% HOUSEKEEPING
  
 clc
@@ -81,89 +81,80 @@ cnfctl_ibtarget = 0; % rate target
 cnfctl_optpol   = 1; % dual mandate
 
 %----------------------------------------------------------------
-% Figures 6-7
+% Table 5.1 and Figure D.1
 %----------------------------------------------------------------
- 
-indic_emp = 1;
+
+% counterfactual display options
+
+indic_emp    = 1; % report empirical counterfactuals?
+indic_models = 1; % report all four models?
 
 get_cnfctl_stats;
+
+%----------------------------------------------------------------
+% Figure 6
+%----------------------------------------------------------------
+
+get_cnfctl_mbc;
+%%
+%----------------------------------------------------------------
+% Figure 7
+%----------------------------------------------------------------
+
+% Top Panel
+
+indic_emp    = 0; % report empirical counterfactuals?
+indic_models = 1; % report all four models?
+
+get_historical_evol;
+
+% Bottom Panel (historical evolution, only empirical IRFs)
+
+indic_emp    = 1; % report empirical counterfactuals?
+indic_models = 0; % report all four models?
+
+get_historical_evol;
+
 
 %----------------------------------------------------------------
 % Figure 8
 %----------------------------------------------------------------
 
-indic_emp = 0;
+% Top and Middle Panel
 
-get_cnfctl_mbc;
+indic_emp    = 0; % report empirical counterfactuals?
+indic_models = 1; % report all four models?
 
+get_historical_scenario_a;
+
+% Bottom Panel
+
+indic_emp    = 1; % report empirical counterfactuals?
+indic_models = 0; % report all four models?
+
+get_historical_scenario_b;
+
+%%
 %----------------------------------------------------------------
 % Figure 9
 %----------------------------------------------------------------
 
-get_historical_evol;
-
-%----------------------------------------------------------------
-% Figure 10 and Figure D.3
-%----------------------------------------------------------------
-
-% RE
-
-indic_RE    = 1; % only RE models?
-indic_behav = 0; % only behavioral models?
-indic_joint = 0; % all models?
-
-get_historical_scenario;
-
-% behavioral
-
-indic_RE    = 0; % only RE models?
-indic_behav = 1; % only behavioral models?
-indic_joint = 0; % all models?
-
-get_historical_scenario;
-
-% joint
-
-indic_RE     = 0; % only RE models?
-indic_behav  = 0; % only behavioral models?
-indic_joint  = 1; % all models?
-indic_models = 1; % show individual models?
-
-get_historical_scenario;
-
-%----------------------------------------------------------------
-% Figure 11
-%----------------------------------------------------------------
-
 decompose_realrates_brank;
 
-%----------------------------------------------------------------
-% Figure D.1 
-%----------------------------------------------------------------
-
-% second moments, early sample
-
-indic_emp   = 0;
-indic_early = 1;
-
-get_cnfctl_stats;
 
 %----------------------------------------------------------------
 % Figure D.2 
 %----------------------------------------------------------------
 
-% historical evolution, only empirical IRFs
+% second moments, early sample
 
-indic_emp   = 1;
-indic_early = 0;
 
-get_historical_evol;
+indic_emp    = 0; % report empirical counterfactuals?
+indic_models = 1; % report all four models?
+indic_early = 1;
 
-%----------------------------------------------------------------
-% Table 4.1
-%----------------------------------------------------------------
-
-get_posterior_probs;
+get_cnfctl_stats;
+%%
 
 %----------------------------------------------------------------
 % Table C.2
